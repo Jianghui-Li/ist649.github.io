@@ -127,22 +127,28 @@
             var message = input.value.trim();
             if (message) {
                 var formattedMessage = "You: " + message;
-                var botResponse = "Bot: What do you want? What is this? Do you think I can understand this ****?";
-
+                var botResponse; // Declare variable for bot's response
+                // Check if the current chat session is new or existing
                 if (!chats[currentChatId]) {
                     chats[currentChatId] = [];
                     createChatButton(currentChatId);
+                    // First message in a new chat session
+                    botResponse = "Bot: What do you want? What is this? Do you think I can understand this ****?";
+                } else {
+                    // Subsequent messages in an existing chat session
+                    botResponse = "Bot: " + message + " my ***!";
                 }
+                // Add messages to the chat session
                 chats[currentChatId].push(formattedMessage);
                 chats[currentChatId].push(botResponse);
-
+                // Display messages in the chat box
                 displayMessage(formattedMessage);
                 displayMessage(botResponse);
-
                 input.value = ''; // Clear input box after sending message
             }
             input.focus(); // Keep focus on input box
         }
+
 
         function displayMessage(message) {
             var chatBox = document.getElementById("chat-box");
@@ -185,7 +191,6 @@
             // Redirect to login page
             window.location.href = 'index.html';
         }
-
 
         document.addEventListener('DOMContentLoaded', function() {
             var username = localStorage.getItem('username') || 'Guest'; // Get the username from localStorage or default to 'Guest'
