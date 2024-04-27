@@ -15,8 +15,8 @@
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full viewport height */
-            width: 100vw; /* Full viewport width */
+            height: 100vh;
+            width: 100vw;
             background-color: white;
             overflow: hidden;
         }
@@ -29,29 +29,35 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .content-area {
             display: flex;
-            height: calc(100% - 40px); /* Adjust based on top-bar height */
+            height: calc(100% - 40px);
         }
         .chat-history {
-            width: 20%; /* Adjusted for better screen utilization */
+            width: 20%;
             background-color: #f7f7f7;
             overflow-y: auto;
             padding: 10px;
-            border-right: 2px solid #e0e0e0;
-            position: relative; /* For absolute positioning of settings button */
+            display: flex;
+            flex-direction: column;
         }
-        .settings-btn {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background-color: darkblue;
+        .history-buttons {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .history-buttons button {
+            width: 90%; /* Button width as 90% of the sidebar */
+            margin: 5px auto; /* Centering button and adding margin */
+            display: block; /* Ensure it's block to take full width */
+            background-color: grey; /* Default background color for buttons */
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+            transition: background-color 0.3s; /* Smooth transition for background color */
+        }
+        .history-buttons button:hover {
+            background-color: darkgrey; /* Background color on hover */
+        }
+        .bottom-buttons {
+            text-align: left;
         }
         .chat-box {
             flex: 1;
@@ -91,8 +97,14 @@
         </div>
         <div class="content-area">
             <div class="chat-history">
-                <p>Chat history:</p>
-                <button class="settings-btn" onclick="alert('Settings feature coming soon!')">Settings</button>
+                <div class="history-buttons" id="history-buttons">
+                    <p>Chat history:</p>
+                    <!-- Dynamic buttons for chat sessions will be added here -->
+                </div>
+                <div class="bottom-buttons">
+                    <button onclick="startNewChat()">New Chat</button>
+                    <button onclick="alert('Settings feature coming soon!')">Settings</button>
+                </div>
             </div>
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <div class="chat-box" id="chat-box">
@@ -107,34 +119,74 @@
     </div>
 
     <script>
+        var chats = [];
+        var currentChatId = 0;
+
         function sendMessage() {
             var input = document.getElementById("user-input");
             var message = input.value.trim();
             if (message) {
-                var chatBox = document.getElementById("chat-box");
-                var msgDiv = document.createElement("div");
-                msgDiv.textContent = message;
-                chatBox.appendChild(msgDiv);
+                var formattedMessage = "You: " + message;
+                var botResponse = "Bot: What do you want? What is this? Do you think I can understand this ****?";
+
+                if (!chats[currentChatId]) {
+                    chats[currentChatId] = [];
+                    createChatButton(currentChatId);
+                }
+                chats[currentChatId].push(formattedMessage);
+                chats[currentChatId].push(botResponse);
+
+                displayMessage(formattedMessage);
+                displayMessage(botResponse);
+
                 input.value = ''; // Clear input box after sending message
-                
-                // Optionally, update the chat history sidebar
-                var history = document.querySelector('.chat-history');
-                var historyEntry = document.createElement("p");
-                historyEntry.textContent = "You: " + message;
-                history.appendChild(historyEntry);
             }
             input.focus(); // Keep focus on input box
         }
 
-        function logOut() {
-        var chatBox = document.getElementById("chat-box");
-        var history = document.querySelector('.chat-history');
-        chatBox.innerHTML = ''; // Clear current chat
-        history.innerHTML = '<p>Chat history cleared.</p>'; // Clear history and show message
-        alert("You have been logged out.");
-        // Redirect to login page
-        window.location.href = 'index.html';
+        function displayMessage(message) {
+            var chatBox = document.getElementById("chat-box");
+            var msgDiv = document.createElement("div");
+            msgDiv.textContent = message;
+            chatBox.appendChild(msgDiv);
         }
+
+        function createChatButton(chatId) {
+            var historyButtons = document.getElementById("history-buttons");
+            var button = document.createElement("button");
+            button.textContent = "Chat " + (chatId + 1);
+            button.onclick = function() { loadChat(chatId); };
+            historyButtons.appendChild(button);
+        }
+
+        function loadChat(chatId) {
+            currentChatId = chatId;
+            var chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = '';
+            chats[chatId].forEach(displayMessage);
+        }
+
+        function startNewChat() {
+            currentChatId = chats.length;
+            var chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = ''; // Clear the chat box for a new session
+        }
+
+        function logOut() {
+            // Clear chat box and history visually
+            var chatBox = document.getElementById("chat-box");
+            var history = document.querySelector('.chat-history');
+            chatBox.innerHTML = ''; // Clear current chat
+            history.innerHTML = '<p>Chat history cleared.</p>'; // Clear history and show message
+            // Notify user
+            alert("You have been logged out.");
+            // Clear all stored data
+            localStorage.clear();
+            // Redirect to login page
+            window.location.href = 'index.html';
+        }
+
+
         document.addEventListener('DOMContentLoaded', function() {
             var username = localStorage.getItem('username') || 'Guest'; // Get the username from localStorage or default to 'Guest'
             document.getElementById('usernameDisplay').textContent = username; // Set the username in the top-bar
